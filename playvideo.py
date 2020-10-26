@@ -33,8 +33,6 @@ def startFromBlack():
     size = (pygame.display.Info().current_w, pygame.display.Info().current_h)
     bgimage = "black.jpg"
     screen.fill(0)
-   
-   
 
 def playVideo(videofile, dur, display):
     x = 1
@@ -43,8 +41,6 @@ def playVideo(videofile, dur, display):
     print(disp_string)
     
     playProcess=subprocess.Popen(['omxplayer', disp_string,'-b', videofile],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE, close_fds=True)
-    #logging("playProcess.pid: "  + playProcess.pid + "\n")
-
 
     time.sleep(dur)
     
@@ -53,9 +49,6 @@ def playVideo(videofile, dur, display):
     else:
         thread.start_new_thread(newset_7, ( ))
     
-    #os.system("killall omxplayer.bin")
-
-
 def exitProgram():
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
@@ -88,12 +81,7 @@ def get_duration(file):
 files = createFileList("./video")
 f.write("Files: " +  str(files) + "\n")
 
-
-
-
-
 startFromBlack()
-
 
 def newset_7():
     rand_7 = random.randint(1, len(files)-1)
@@ -107,22 +95,10 @@ def newset_2():
     next_video_2 = videoPath + files[rand_2]
     dur_2 = get_duration(next_video_2)
     playVideo(next_video_2, dur_2, 2)
-
-
    
     
 thread.start_new_thread(newset_7, ( ))
 thread.start_new_thread(newset_2, ( ))
 
-
-
-
-    
-def later():
-    rand = random.randint(1, len(files)-1)
-    the_video = videoPath + files[rand]
-    logging(str(the_video) + "\n")    
-    dur = get_duration(the_video)
-    playVideo(the_video, dur, 2)
 time.sleep(30000)    
 exitProgram()
