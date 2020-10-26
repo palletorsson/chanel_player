@@ -3,7 +3,7 @@
 import pygame
 import time
 import subprocess
-import threading
+import thread
 import os
 import sys
 from moviepy.editor import *
@@ -11,9 +11,13 @@ from os import listdir
 from os.path import isfile, join
 import random
 from datetime import datetime
-
-
-
+import multiprocessing
+import sched
+scheduler_1 = sched.scheduler(time.time, time.sleep)
+scheduler_2 = sched.scheduler(time.time, time.sleep)
+videoPath = "/home/pi/Documents/video/videoplayer/video/"
+num = 0 
+ 
 def createFileList(mypath):
     onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
     return onlyfiles
@@ -32,14 +36,22 @@ def startFromBlack():
    
    
 
-def playVideo(videofile, dur):
+def playVideo(videofile, dur, display):
     x = 1
     logging("Starting video: "  + videofile + "\n")
+    disp_string = '--display='+str(display)
+    print(disp_string)
     
-    playProcess=subprocess.Popen(['omxplayer','-b',videofile],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE, close_fds=True)
+    playProcess=subprocess.Popen(['omxplayer', disp_string,'-b', videofile],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE, close_fds=True)
     #logging("playProcess.pid: "  + playProcess.pid + "\n")
-    
+
+
     time.sleep(dur)
+    
+    if display == 2: 
+        thread.start_new_thread(newset_2,( ))
+    else:
+        thread.start_new_thread(newset_7, ( ))
     
     #os.system("killall omxplayer.bin")
 
@@ -51,6 +63,8 @@ def exitProgram():
     logging("exit program" + "\n")
     f.close()
     os.system("killall omxplayer.bin")
+    
+
     sys.exit(0)
 
 f = open("logger.txt", "w")
@@ -58,29 +72,57 @@ f = open("logger.txt", "w")
 def logging(logtext):
     f.write(logtext)
 
-def getVideoLength(video):
-    clip = VideoFileClip(video)
-    video_duration = int(clip.duration)
-    f.write("Clip is " +  str(video_duration) + " seconds." + "\n")
-    return video_duration
 
-#video=threading.Thread(target=playVideo, args=["/home/pi/Documents/video/bh.mp4", 1])
-#video.start()
+def get_duration(file):
+    """Get the duration of a video using ffprobe."""
+    cmd = 'ffprobe -i {} -show_entries format=duration -v quiet -of csv="p=0"'.format(file)
+    output = subprocess.check_output(
+        cmd,
+        shell=True, # Let this run in the shell
+        stderr=subprocess.STDOUT
+    )
+    # return round(float(output))  # ugly, but rounds your seconds up or down
+    return float(output)
+
 
 files = createFileList("./video")
 f.write("Files: " +  str(files) + "\n")
-#background=threading.Thread(target=startFromBlack)
-#background.start()
+
+
+
+
 
 startFromBlack()
 
-for i in range(3000):
-    rand = random.randint(1, len(files)-1)
-    try:
-        dur = getVideoLength("/home/pi/Documents/videoplayer/video/"+ files[rand])
-        playVideo("/home/pi/Documents/videoplayer/video/"+ files[rand], dur)
-    except:
-        f.write("Error on playback, random :" +  str(rand) + " ... " + "\n")
-    
-exitProgram()
 
+def newset_7():
+    rand_7 = random.randint(1, len(files)-1)
+    next_video_7 = videoPath + files[rand_7]
+    dur_7 = get_duration(next_video_7)
+    playVideo(next_video_7, dur_7, 7)
+
+
+def newset_2():
+    rand_2 = random.randint(1, len(files)-1)
+    next_video_2 = videoPath + files[rand_2]
+    dur_2 = get_duration(next_video_2)
+    playVideo(next_video_2, dur_2, 2)
+
+
+   
+    
+thread.start_new_thread(newset_7, ( ))
+thread.start_new_thread(newset_2, ( ))
+
+
+
+
+    
+def later():
+    rand = random.randint(1, len(files)-1)
+    the_video = videoPath + files[rand]
+    logging(str(the_video) + "\n")    
+    dur = get_duration(the_video)
+    playVideo(the_video, dur, 2)
+time.sleep(30000)    
+exitProgram()
