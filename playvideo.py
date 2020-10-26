@@ -11,10 +11,8 @@ from os import listdir
 from os.path import isfile, join
 import random
 from datetime import datetime
-import multiprocessing
-import sched
-scheduler_1 = sched.scheduler(time.time, time.sleep)
-scheduler_2 = sched.scheduler(time.time, time.sleep)
+
+
 videoPath = "/home/pi/Documents/video/videoplayer/video/"
 num = 0 
  
